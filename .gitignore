@@ -1,0 +1,15 @@
+# Pastas de dependências e cachê
+node_modules/
+__pycache__/
+
+sessao_nuclear/
+zap_profile/
+visao_computacional/
+
+# Arquivos de log e sistema
+.env
+*.log
+.DS_Store
+
+# Arquivos de bat
+*.bat
