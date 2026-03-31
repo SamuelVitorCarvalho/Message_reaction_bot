@@ -19,6 +19,34 @@ from selenium.common.exceptions import StaleElementReferenceException, NoSuchEle
 from webdriver_manager.chrome import ChromeDriverManager
 import psutil
 
+def carregar_variaveis_env():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidatos = [
+        os.path.join(base_dir, ".env"),
+        os.path.join(os.path.dirname(base_dir), ".env"),
+        os.path.join(os.getcwd(), ".env"),
+    ]
+
+    for caminho in candidatos:
+        if not os.path.isfile(caminho):
+            continue
+        try:
+            with open(caminho, "r", encoding="utf-8") as arquivo_env:
+                for linha in arquivo_env:
+                    linha = linha.strip()
+                    if not linha or linha.startswith("#") or "=" not in linha:
+                        continue
+                    chave, valor = linha.split("=", 1)
+                    chave = chave.strip()
+                    valor = valor.strip().strip('"').strip("'")
+                    if chave and chave not in os.environ:
+                        os.environ[chave] = valor
+            break
+        except Exception:
+            pass
+
+carregar_variaveis_env()
+
 # --- CONFIGURAÇÕES DE USUÁRIO ---
 NOME_COMPLETO_NA_ESCALA = "SAMUEL VITOR GOMES DE CARVALHO"
 PASTA_DOWNLOADS = r"C:\Users\Meu_PC\Downloads"
@@ -48,8 +76,8 @@ PALAVRAS_PROIBIDAS = [
 NOME_DO_ANALISTA = "Analista"
 NOME_DO_GRUPO = "Drivers Betim" 
 NOME_DO_PERFIL = "zap_profile" 
-TOPICO_NTFY = "alerta_de_rota_betim_Samuel_Carvalho"
-LINK_ALEXA_MONKEY = "https://api-v2.voicemonkey.io/announcement?token=139b4eee6afcccd930c963d0f7203a07_e959829646e350bbcd8134d5a3377769&device=alarme" 
+TOPICO_NTFY = os.getenv("TOPICO_NTFY", "")
+LINK_ALEXA_MONKEY = os.getenv("LINK_ALEXA_MONKEY", "")
 
 def log(mensagem):
     hora = datetime.datetime.now().strftime("%H:%M:%S") 
