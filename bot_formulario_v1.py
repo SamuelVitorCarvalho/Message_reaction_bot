@@ -4,6 +4,7 @@ import os
 import re
 import datetime
 import urllib.request
+import winsound
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -47,7 +48,9 @@ carregar_variaveis_env()
 
 NOME_DO_GRUPO  = "PM MOTORISTAS"
 NOME_DO_PERFIL = "zap_profile"
+NOME_DO_ANALISTA = "Analista"
 TOPICO_NTFY    = os.getenv("TOPICO_NTFY", "")
+LINK_ALEXA_MONKEY = os.getenv("LINK_ALEXA_MONKEY", "")
 
 # --- Dados fixos do formulário ---
 DRIVER_ID    = os.getenv("DRIVER_ID", "")
@@ -175,6 +178,51 @@ def obter_mensagens_recentes(driver, quantidade=10):
             continue
     return resultado
 
+def verificar_lateral_por_analista(driver):
+    try:
+        xpath_linhas_com_msg = '//div[@id="pane-side"]//div[@role="row"][.//span[contains(translate(@aria-label, "NÃO LIDA", "não lida"), "não lida") or contains(translate(@aria-label, "UNREAD", "unread"), "unread")]]'
+        
+        linhas_nao_lidas = driver.find_elements(By.XPATH, xpath_linhas_com_msg)
+        
+        for linha in linhas_nao_lidas:
+            try:
+                xpath_titulo = './/span[@title and @dir="auto"]'
+                elementos_titulo = linha.find_elements(By.XPATH, xpath_titulo)
+                
+                if elementos_titulo:
+                    nome_da_conversa = elementos_titulo[0].get_attribute('title')
+                    
+                    if NOME_DO_ANALISTA.lower() in nome_da_conversa.lower():
+                        return True
+            except Exception as e:
+                continue
+                
+        return False
+    except Exception as e:
+        log(f"⚠️ [DEBUG] Erro geral no radar da barra lateral: {e}")
+        return False
+
+def disparar_alarme_total(motivo="ALERTA"):
+    log(f"🚨 ATIVANDO ALARME! Motivo: {motivo} 🚨")
+
+    if LINK_ALEXA_MONKEY:
+        try:
+            log("🐵 Enviando sinal para Alexa...")
+            req = urllib.request.Request(LINK_ALEXA_MONKEY)
+            req.add_header("User-Agent", "Mozilla/5.0")
+            resp = urllib.request.urlopen(req, timeout=5)
+            log(f"✅ Alexa respondeu: {resp.getcode()}")
+        except Exception as e:
+            log(f"⚠️ FALHA NA ALEXA (Erro {e}). Verifique token ou URL.")
+
+    notificar_ntfy("ANALISTA CHAMANDO!", "Mensagem do analista detectada apos envio do formulario.", "rotating_light", "high")
+
+    try:
+        for _ in range(5):
+            winsound.Beep(1500, 300)
+    except Exception:
+        pass
+
 # ==============================================================
 # 📋  GOOGLE FORMS
 # ==============================================================
@@ -185,6 +233,8 @@ def preencher_formulario(driver_principal, link_forms):
     driver_principal.execute_script(f"window.open('{link_forms}', '_blank');")
     time.sleep(0.7)
     driver_principal.switch_to.window(driver_principal.window_handles[-1])
+
+    enviado_com_sucesso = False
 
     try:
         WebDriverWait(driver_principal, 20).until(
@@ -218,16 +268,20 @@ def preencher_formulario(driver_principal, link_forms):
         # 🔹 CAMPO 7 — Modelo do Veículo
         preencher_campo_texto(driver_principal, blocos_pergunta, indice=6, valor="Palio")
 
-        # Envia o formulário
-        # enviar_formulario(driver_principal)
+        enviado_com_sucesso = enviar_formulario(driver_principal)
 
     except Exception as e:
         log(f"❌ Erro ao preencher formulário: {e}")
         notificar_ntfy("Erro no Formulário", str(e), "x", "high")
-    # finally:
-    #     driver_principal.close()
-    #     driver_principal.switch_to.window(driver_principal.window_handles[0])
-    #     log("🔙 Voltei para o WhatsApp.")
+    finally:
+        try:
+            driver_principal.close()
+            driver_principal.switch_to.window(driver_principal.window_handles[0])
+            log("🔙 Voltei para o WhatsApp.")
+        except Exception as e:
+            log(f"⚠️ Falha ao voltar para aba do WhatsApp: {e}")
+
+    return enviado_com_sucesso
 
 # ==============================================================
 # 🛠️  HELPERS DE PREENCHIMENTO
@@ -416,8 +470,10 @@ def enviar_formulario(driver):
         time.sleep(2)
         log("🚀 Formulário enviado!")
         notificar_ntfy("Formulário Enviado!", "Preenchimento automático concluído.", "white_check_mark", "high")
+        return True
     except Exception as e:
         log(f"❌ Erro ao enviar formulário: {e}")
+        return False
 
 # ==============================================================
 # 🔁  LOOP PRINCIPAL
@@ -436,9 +492,19 @@ def main():
     notificar_ntfy("Bot Formulário Iniciado", "Monitorando links de formulário...", "eyes", "default")
 
     msgs_processadas = set()
+    monitorar_analista = False
+    alarme_disparado = False
 
     try:
         while True:
+            if monitorar_analista:
+                analista_chamando = verificar_lateral_por_analista(driver)
+                if analista_chamando and not alarme_disparado:
+                    disparar_alarme_total("MENSAGEM DO ANALISTA")
+                    alarme_disparado = True
+                elif not analista_chamando and alarme_disparado:
+                    alarme_disparado = False
+
             mensagens = obter_mensagens_recentes(driver, quantidade=10)
 
             for msg_id, texto in mensagens:
@@ -451,7 +517,12 @@ def main():
                     log(f"🔗 Link de formulário detectado! ID: {msg_id}")
                     notificar_ntfy("Formulário Detectado", "Iniciando preenchimento...", "pencil", "high")
                     msgs_processadas.add(msg_id)
-                    preencher_formulario(driver, link)
+                    enviado = preencher_formulario(driver, link)
+
+                    if enviado and not monitorar_analista:
+                        monitorar_analista = True
+                        log(f"🛡️ Formulário enviado. Vigilância do analista ativada para '{NOME_DO_ANALISTA}'.")
+                        notificar_ntfy("Vigilância Ativada", "Monitoramento de mensagem do analista ativado após envio.", "shield", "default")
                 else:
                     msgs_processadas.add(msg_id)
 
