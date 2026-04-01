@@ -52,7 +52,7 @@ NOME_DO_ANALISTA = "Analista"
 TOPICO_NTFY    = os.getenv("TOPICO_NTFY", "")
 LINK_ALEXA_MONKEY = os.getenv("LINK_ALEXA_MONKEY", "")
 
-# --- Dados fixos do formulário ---
+# --- Dados fixos do Formulario ---
 DRIVER_ID    = os.getenv("DRIVER_ID", "")
 PHONE_NUMBER = os.getenv("PHONE_NUMBER", "")
 
@@ -240,7 +240,7 @@ def desligar_pc_protocolo(mensagem="MENSAGEM DO ANALISTA LIDA"):
 # ==============================================================
 
 def preencher_formulario(driver_principal, link_forms):
-    log(f"📋 Abrindo formulário: {link_forms}")
+    log(f"📋 Abrindo Formulario: {link_forms}")
 
     driver_principal.execute_script(f"window.open('{link_forms}', '_blank');")
     time.sleep(0.7)
@@ -252,7 +252,7 @@ def preencher_formulario(driver_principal, link_forms):
         WebDriverWait(driver_principal, 20).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'div[role="listitem"]'))
         )
-        log("✅ Formulário carregado!")
+        log("✅ Formulario carregado!")
 
         listitems = driver_principal.find_elements(By.CSS_SELECTOR, 'div[role="listitem"]')
         blocos_pergunta = filtrar_blocos_pergunta(listitems)
@@ -283,8 +283,8 @@ def preencher_formulario(driver_principal, link_forms):
         enviado_com_sucesso = enviar_formulario(driver_principal)
 
     except Exception as e:
-        log(f"❌ Erro ao preencher formulário: {e}")
-        notificar_ntfy("Erro no Formulário", str(e), "x", "high")
+        log(f"❌ Erro ao preencher Formulario: {e}")
+        notificar_ntfy("Erro no Formulario", str(e), "x", "high")
     finally:
         try:
             driver_principal.close()
@@ -480,11 +480,11 @@ def enviar_formulario(driver):
         driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
         btn.click()
         time.sleep(2)
-        log("🚀 Formulário enviado!")
-        notificar_ntfy("Formulário Enviado!", "Preenchimento automático concluído.", "white_check_mark", "high")
+        log("🚀 Formulario enviado!")
+        notificar_ntfy("Formulario Enviado!", "Preenchimento automático concluído.", "white_check_mark", "high")
         return True
     except Exception as e:
-        log(f"❌ Erro ao enviar formulário: {e}")
+        log(f"❌ Erro ao enviar Formulario: {e}")
         return False
 
 # ==============================================================
@@ -492,16 +492,15 @@ def enviar_formulario(driver):
 # ==============================================================
 
 def main():
-    # os.system("taskkill /f /im chrome.exe >nul 2>&1")
+    os.system("taskkill /f /im chrome.exe >nul 2>&1")
     driver = iniciar_driver()
 
     print("\n" + "=" * 50)
-    print("  Bot de Formulário — WhatsApp Web")
-    print(f"  Driver ID: {DRIVER_ID}")
+    print("  Bot de Formulario — WhatsApp Web")
     print("=" * 50 + "\n")
 
     abrir_whatsapp_grupo(driver)
-    notificar_ntfy("Bot Formulário Iniciado", "Monitorando links de formulário...", "eyes", "default")
+    notificar_ntfy("Bot Formulario Iniciado", "Monitorando links de Formulario...", "eyes", "default")
 
     msgs_processadas = set()
     monitorar_analista = False
@@ -529,14 +528,14 @@ def main():
                 link = extrair_link_forms(texto)
 
                 if link:
-                    log(f"🔗 Link de formulário detectado! ID: {msg_id}")
-                    notificar_ntfy("Formulário Detectado", "Iniciando preenchimento...", "pencil", "high")
+                    log(f"🔗 Link de Formulario detectado! ID: {msg_id}")
+                    notificar_ntfy("Formulario Detectado", "Iniciando preenchimento...", "pencil", "high")
                     msgs_processadas.add(msg_id)
                     enviado = preencher_formulario(driver, link)
 
                     if enviado and not monitorar_analista:
                         monitorar_analista = True
-                        log(f"🛡️ Formulário enviado. Vigilância do analista ativada para '{NOME_DO_ANALISTA}'.")
+                        log(f"🛡️ Formulario enviado. Vigilância do analista ativada para '{NOME_DO_ANALISTA}'.")
                         notificar_ntfy("Vigilância Ativada", "Monitoramento de mensagem do analista ativado após envio.", "shield", "default")
                 else:
                     msgs_processadas.add(msg_id)
@@ -545,7 +544,7 @@ def main():
 
     except KeyboardInterrupt:
         log("Bot encerrado pelo usuário.")
-        notificar_ntfy("Bot Encerrado", "Bot de formulário foi desligado.", "zzz")
+        notificar_ntfy("Bot Encerrado", "Bot de Formulario foi desligado.", "zzz")
         try:
             driver.quit()
         except:
