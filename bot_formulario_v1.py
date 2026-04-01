@@ -223,6 +223,18 @@ def disparar_alarme_total(motivo="ALERTA"):
     except Exception:
         pass
 
+def desligar_pc_protocolo(mensagem="MENSAGEM DO ANALISTA LIDA"):
+    log(f"👋 Protocolo de encerramento iniciado: {mensagem}")
+    notificar_ntfy("Desligando PC", f"{mensagem}. Desligando em 30s...", "zzz", "high")
+    try:
+        winsound.Beep(1000, 120)
+        winsound.Beep(1500, 320)
+    except Exception:
+        pass
+    log("🔌 Encerrando bot e agendando desligamento do Windows...")
+    os.system("shutdown /s /f /t 30")
+    sys.exit(0)
+
 # ==============================================================
 # 📋  GOOGLE FORMS
 # ==============================================================
@@ -502,8 +514,11 @@ def main():
                 if analista_chamando and not alarme_disparado:
                     disparar_alarme_total("MENSAGEM DO ANALISTA")
                     alarme_disparado = True
+                elif analista_chamando:
+                    time.sleep(2)
+                    continue
                 elif not analista_chamando and alarme_disparado:
-                    alarme_disparado = False
+                    desligar_pc_protocolo("Mensagem do analista foi lida")
 
             mensagens = obter_mensagens_recentes(driver, quantidade=10)
 
