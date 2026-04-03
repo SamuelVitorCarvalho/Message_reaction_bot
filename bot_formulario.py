@@ -487,6 +487,25 @@ def enviar_formulario(driver):
         log(f"❌ Erro ao enviar Formulario: {e}")
         return False
 
+def clicar_botao_scroll_baixo(driver):
+    """Busca e clica no círculo de rolagem baseado no seu print (aria-label correto)."""
+    try:
+        # Seletor exato baseado no print: aria-label="Deslizar para o fim da página"
+        # Também busca pelo data-icon que aparece dentro do botão
+        seletor = 'button[aria-label="Deslizar para o fim da página"], span[data-icon="ic-chevron-down-wide"]'
+        
+        botoes = driver.find_elements(By.CSS_SELECTOR, seletor)
+        
+        for btn in botoes:
+            if btn.is_displayed():
+                # Tenta clicar via JavaScript para ser mais garantido
+                driver.execute_script("arguments[0].click();", btn)
+                log("⏬ Botão 'Deslizar para o fim' clicado com sucesso!")
+                return True
+    except Exception as e:
+        log(f"DEBUG: Erro ao tentar rolar: {e}")
+    return False
+
 # ==============================================================
 # 🔁  LOOP PRINCIPAL
 # ==============================================================
@@ -508,6 +527,8 @@ def main():
 
     try:
         while True:
+            clicar_botao_scroll_baixo(driver)
+
             if monitorar_analista:
                 analista_chamando = verificar_lateral_por_analista(driver)
                 if analista_chamando and not alarme_disparado:
