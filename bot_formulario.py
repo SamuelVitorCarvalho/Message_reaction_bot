@@ -158,7 +158,7 @@ def extrair_link_forms(texto):
     match = REGEX_FORMS.search(texto)
     return match.group(0) if match else None
 
-def obter_mensagens_recentes(driver, quantidade=10):
+def obter_mensagens_recentes(driver, quantidade=2):
     msgs = driver.find_elements(
         By.XPATH,
         '//div[contains(@class, "message-out") or contains(@class, "message-in")]'
