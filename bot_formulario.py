@@ -540,7 +540,7 @@ def main():
                 elif not analista_chamando and alarme_disparado:
                     desligar_pc_protocolo("Mensagem do analista foi lida")
 
-            mensagens = obter_mensagens_recentes(driver, quantidade=10)
+            mensagens = obter_mensagens_recentes(driver, quantidade=2)
 
             for msg_id, texto in mensagens:
                 if msg_id in msgs_processadas:
