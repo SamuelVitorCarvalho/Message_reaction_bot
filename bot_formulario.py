@@ -272,7 +272,7 @@ def preencher_formulario(driver_principal, link_forms):
         preencher_campo_checkboxes(driver_principal, blocos_pergunta, indice=3, aceitos=CLUSTERS_ACEITOS)
 
         # 🔹 CAMPO 5 — Tempo de Chegada
-        preencher_campo_radio(driver_principal, blocos_pergunta, indice=4, opcao="15 a 30 min")
+        preencher_campo_radio(driver_principal, blocos_pergunta, indice=4, opcao="Até 15 min")
 
         # 🔹 CAMPO 6 — Perfil do Veículo
         preencher_campo_radio(driver_principal, blocos_pergunta, indice=5, opcao="Hatch")
