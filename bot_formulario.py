@@ -64,8 +64,6 @@ CLUSTERS_ACEITOS = [
     "PTB",
     "Senhora das Graças",
     "Santo Afonso",
-    "São Caetano",
-    "Sao Caetano",
 ]
 
 REGEX_FORMS = re.compile(r'https://docs\.google\.com/forms/[^\s]+', re.IGNORECASE)
