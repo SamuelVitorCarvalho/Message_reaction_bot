@@ -46,13 +46,12 @@ carregar_variaveis_env()
 # Cada linha dentro desta lista é um GRUPO de condições.
 # Se a mensagem contiver TODAS as palavras de ALGUM grupo, ele reage.
 REGRAS_DE_ACEITE = [
-    ["Sede"],
+    ["Betim"],
     ["Niteroi"],
     ["Niterói"],
     ["Santo Afonso"],
-    ["Nazareno"],
+    ["Petrovale"],
     ["PTB"],
-    ["Senhora das Graças"],
     ["São Caetano"],
     ["Sao Caetano"],
 ]
@@ -62,7 +61,7 @@ PALAVRAS_PROIBIDAS = [
 ]
 
 NOME_DO_ANALISTA = "Analista"
-NOME_DO_GRUPO = "PM MOTORISTAS"
+NOME_DO_GRUPO = "Drivers Betim"
 NOME_DO_PERFIL = "zap_profile"
 TOPICO_NTFY = os.getenv("TOPICO_NTFY", "")
 LINK_ALEXA_MONKEY = os.getenv("LINK_ALEXA_MONKEY", "")
